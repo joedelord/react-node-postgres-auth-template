@@ -6,8 +6,8 @@ function Home() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <main>
-      <h1>Auth Template</h1>
+    <main className="min-h-screen bg-gray-100 p-8">
+      <h1 className="text-4xl font-bold text-center">Auth Template</h1>
 
       {isAuthenticated ? (
         <Link to="/dashboard">Open dashboard</Link>
