@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/useAuth";
 import api from "../services/api";
 import UserTable from "../components/admin/UserTable";
+import AddUserForm from "../components/admin/AddUserForm";
 
 function Admin() {
   const { user: currentUser } = useAuth();
@@ -10,6 +11,7 @@ function Admin() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -85,18 +87,59 @@ function Admin() {
     }
   };
 
+  const handleCreateUser = async (userData) => {
+    setErrorMessage("");
+
+    try {
+      const response = await api.post("/users", userData);
+
+      setUsers((currentUsers) => [...currentUsers, response.data.user]);
+
+      setIsAddUserOpen(false);
+    } catch (error) {
+      setErrorMessage(error.response?.data?.error || "Failed to create user");
+
+      throw error;
+    }
+  };
+
   if (isLoading) {
     return <p>Loading users...</p>;
   }
 
   return (
     <main className="mx-auto max-w-6xl p-8 text-center">
-      <h1 className="text-4xl font-bold mb-5 text-center">User management</h1>
+      <div className="mb-5 flex items-center justify-between">
+        <h1 className="text-4xl font-bold">User management</h1>
+
+        <button
+          type="button"
+          onClick={() => setIsAddUserOpen((current) => !current)}
+          className="
+    flex h-10 w-10
+    items-center justify-center
+    rounded-full
+    bg-blue-600
+    text-white
+    hover:bg-blue-700
+  "
+          aria-label={isAddUserOpen ? "Close" : "Add user"}
+        >
+          <span className="text-xl mb-1">{isAddUserOpen ? "×" : "+"}</span>
+        </button>
+      </div>
 
       {errorMessage && (
         <p role="alert" className="mb-4 rounded-md bg-red-50 p-3 text-red-700">
           {errorMessage}
         </p>
+      )}
+
+      {isAddUserOpen && (
+        <AddUserForm
+          onCreateUser={handleCreateUser}
+          onCancel={() => setIsAddUserOpen(false)}
+        />
       )}
 
       <UserTable

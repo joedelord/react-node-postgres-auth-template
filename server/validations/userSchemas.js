@@ -18,7 +18,27 @@ const updateUserRoleSchema = z.object({
   }),
 });
 
+const createUserSchema = z.object({
+  body: z.object({
+    username: z
+      .string()
+      .trim()
+      .min(3, "Username must be at least 3 characters")
+      .max(100),
+
+    email: z.email("Invalid email address").trim().toLowerCase(),
+
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(128),
+
+    role: z.enum(["user", "moderator", "admin"]).default("user"),
+  }),
+});
+
 module.exports = {
   userIdSchema,
   updateUserRoleSchema,
+  createUserSchema,
 };

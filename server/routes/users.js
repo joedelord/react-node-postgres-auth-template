@@ -3,6 +3,7 @@ const express = require("express");
 const {
   getUsers,
   getUserById,
+  createUser,
   updateUserRole,
   deleteUser,
 } = require("../controllers/userController");
@@ -14,6 +15,7 @@ const validate = require("../middleware/validate");
 const {
   userIdSchema,
   updateUserRoleSchema,
+  createUserSchema,
 } = require("../validations/userSchemas");
 
 const router = express.Router();
@@ -36,6 +38,10 @@ router.patch(
   updateUserRole,
 );
 
+router.post("/", requireRole("admin"), createUser);
+
 router.delete("/:id", requireRole("admin"), validate(userIdSchema), deleteUser);
+
+router.post("/", requireRole("admin"), validate(createUserSchema), createUser);
 
 module.exports = router;
