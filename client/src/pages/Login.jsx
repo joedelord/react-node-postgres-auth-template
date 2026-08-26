@@ -2,10 +2,9 @@ import { useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router";
 
 import { useAuth } from "../context/useAuth";
+import LoginForm from "../components/admin/LoginForm";
 
 function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -22,9 +21,7 @@ function Login() {
     return <Navigate to="/dashboard" replace />;
   }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
+  const handleLogin = async (email, password) => {
     setErrorMessage("");
     setIsSubmitting(true);
 
@@ -44,46 +41,14 @@ function Login() {
   };
 
   return (
-    <main>
-      <h1>Login</h1>
+    <main className="min-h-screen bg-gray-100 p-8">
+      <h1 className="text-4xl font-bold mb-5 text-center">Login</h1>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="email">Email</label>
-
-          <input
-            id="email"
-            type="email"
-            value={email}
-            autoComplete="email"
-            required
-            onChange={(event) => {
-              setEmail(event.target.value);
-            }}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="password">Password</label>
-
-          <input
-            id="password"
-            type="password"
-            value={password}
-            autoComplete="current-password"
-            required
-            onChange={(event) => {
-              setPassword(event.target.value);
-            }}
-          />
-        </div>
-
-        {errorMessage && <p role="alert">{errorMessage}</p>}
-
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Logging in..." : "Login"}
-        </button>
-      </form>
+      <LoginForm
+        onSubmit={handleLogin}
+        errorMessage={errorMessage}
+        isSubmitting={isSubmitting}
+      />
     </main>
   );
 }

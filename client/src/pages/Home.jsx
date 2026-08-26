@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import ButtonLink from "../components/ButtonLink";
 
 import { useAuth } from "../context/useAuth";
 
@@ -6,13 +6,15 @@ function Home() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <main className="min-h-screen bg-gray-100 p-8">
-      <h1 className="text-4xl font-bold text-center">Auth Template</h1>
+    <main className="min-h-screen bg-gray-100 p-8 text-center">
+      <h1 className="text-4xl font-bold mb-5">Auth Template</h1>
 
       {isAuthenticated ? (
-        <Link to="/dashboard">Open dashboard</Link>
+        <ButtonLink to="/dashboard" className="text-xl block w-fit mx-auto">
+          Open dashboard
+        </ButtonLink>
       ) : (
-        <Link to="/login">Login</Link>
+        <ButtonLink to="/login">Login</ButtonLink>
       )}
     </main>
   );

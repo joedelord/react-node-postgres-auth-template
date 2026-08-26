@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { useAuth } from "../context/useAuth";
 import api from "../services/api";
+import UserTable from "../components/admin/UserTable";
 
 function Admin() {
   const { user: currentUser } = useAuth();
@@ -89,59 +90,21 @@ function Admin() {
   }
 
   return (
-    <main>
-      <h1>User management</h1>
+    <main className="mx-auto max-w-6xl p-8 text-center">
+      <h1 className="text-4xl font-bold mb-5 text-center">User management</h1>
 
-      {errorMessage && <p role="alert">{errorMessage}</p>}
+      {errorMessage && (
+        <p role="alert" className="mb-4 rounded-md bg-red-50 p-3 text-red-700">
+          {errorMessage}
+        </p>
+      )}
 
-      <table>
-        <thead>
-          <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {users.map((user) => (
-            <tr key={user.id}>
-              <td>
-                {user.username}
-
-                {user.id === currentUser.id && <> (you)</>}
-              </td>
-
-              <td>{user.email}</td>
-
-              <td>
-                <select
-                  value={user.role}
-                  disabled={user.id === currentUser.id}
-                  onChange={(event) =>
-                    handleRoleChange(user.id, event.target.value)
-                  }
-                >
-                  <option value="user">User</option>
-
-                  <option value="moderator">Moderator</option>
-
-                  <option value="admin">Admin</option>
-                </select>
-              </td>
-
-              <td>
-                {user.id !== currentUser.id && (
-                  <button type="button" onClick={() => handleDeleteUser(user)}>
-                    Delete
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <UserTable
+        users={users}
+        currentUser={currentUser}
+        onRoleChange={handleRoleChange}
+        onDeleteUser={handleDeleteUser}
+      />
     </main>
   );
 }
