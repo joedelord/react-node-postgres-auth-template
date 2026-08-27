@@ -13,7 +13,7 @@ function LoginForm({ onSubmit, errorMessage, isSubmitting }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-100 mx-auto p-5 rounded border-2 bg-gray-100"
+      className="w-full max-w-md bg-gray-50 mx-auto p-5 rounded border-2"
     >
       <div className="flex flex-col gap-1">
         <label className="" htmlFor="email">

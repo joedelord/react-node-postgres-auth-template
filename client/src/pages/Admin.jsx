@@ -4,9 +4,11 @@ import { useAuth } from "../context/useAuth";
 import api from "../services/api";
 import UserTable from "../components/admin/UserTable";
 import AddUserForm from "../components/admin/AddUserForm";
+import { useNavigate } from "react-router";
 
 function Admin() {
   const { user: currentUser } = useAuth();
+  const navigate = useNavigate();
 
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -108,7 +110,7 @@ function Admin() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl p-8 text-center">
+    <main className="mx-auto max-w-4xl p-8 text-center bg-gray">
       <div className="mb-5 flex items-center justify-between">
         <h1 className="text-4xl font-bold">User management</h1>
 
@@ -148,6 +150,10 @@ function Admin() {
         onRoleChange={handleRoleChange}
         onDeleteUser={handleDeleteUser}
       />
+
+      <button className="my-4" onClick={() => navigate(-1)}>
+        ← Back
+      </button>
     </main>
   );
 }
