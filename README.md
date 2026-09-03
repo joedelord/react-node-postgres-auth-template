@@ -8,53 +8,53 @@ and automated tests.
 
 ### Frontend
 
--   React
--   Vite
--   React Router (`react-router`)
--   Axios
--   Vitest
--   React Testing Library
--   jsdom
+- React
+- Vite
+- React Router (`react-router`)
+- Axios
+- Vitest
+- React Testing Library
+- jsdom
 
 ### Backend
 
--   Node.js
--   Express
--   PostgreSQL
--   `pg`
--   JWT (`jsonwebtoken`)
--   HttpOnly cookies
--   `bcryptjs`
--   Zod
--   Helmet
--   `express-rate-limit`
--   Vitest
--   Supertest
+- Node.js
+- Express
+- PostgreSQL
+- `pg`
+- JWT (`jsonwebtoken`)
+- HttpOnly cookies
+- `bcryptjs`
+- Zod
+- Helmet
+- `express-rate-limit`
+- Vitest
+- Supertest
 
 ## Features
 
--   User registration
--   Login and logout
--   JWT authentication with HttpOnly cookies
--   Current-user endpoint
--   Protected React routes
--   Role-based authorization
--   `user`, `moderator`, and `admin` roles
--   Admin user management
--   User role changes
--   User deletion
--   PostgreSQL migrations
--   Zod request validation
--   Centralized Express error handling
--   Login and registration rate limiting
--   Security headers with Helmet
--   Separate development and test databases
--   Backend authentication tests
--   Frontend authentication and routing tests
+- User registration
+- Login and logout
+- JWT authentication with HttpOnly cookies
+- Current-user endpoint
+- Protected React routes
+- Role-based authorization
+- `user`, `moderator`, and `admin` roles
+- Admin user management
+- User role changes
+- User deletion
+- PostgreSQL migrations
+- Zod request validation
+- Centralized Express error handling
+- Login and registration rate limiting
+- Security headers with Helmet
+- Separate development and test databases
+- Backend authentication tests
+- Frontend authentication and routing tests
 
 ## Project structure
 
-``` text
+```text
 react-node-postgres-auth-template/
 ├── client/
 │   ├── src/
@@ -124,9 +124,9 @@ react-node-postgres-auth-template/
 
 Install before starting:
 
--   Node.js
--   npm
--   PostgreSQL
+- Node.js
+- npm
+- PostgreSQL
 
 ## Installation
 
@@ -135,14 +135,14 @@ client and server.
 
 ### Client
 
-``` bash
+```bash
 cd client
 npm install
 ```
 
 ### Server
 
-``` bash
+```bash
 cd server
 npm install
 ```
@@ -151,13 +151,13 @@ npm install
 
 Create:
 
-``` text
+```text
 server/.env
 ```
 
 Example:
 
-``` env
+```env
 NODE_ENV=development
 PORT=5000
 
@@ -174,7 +174,7 @@ COOKIE_EXPIRES_IN_MS=3600000
 
 Generate a random JWT secret with Node.js:
 
-``` bash
+```bash
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
 
@@ -186,7 +186,7 @@ Create a development database for the application.
 
 Then run the migrations from the server directory:
 
-``` bash
+```bash
 npm run migrate
 ```
 
@@ -197,27 +197,27 @@ migration is not executed twice.
 
 Start the backend:
 
-``` bash
+```bash
 cd server
 npm run dev
 ```
 
 By default the backend runs at:
 
-``` text
+```text
 http://localhost:5000
 ```
 
 Start the frontend in another terminal:
 
-``` bash
+```bash
 cd client
 npm run dev
 ```
 
 By default Vite runs at:
 
-``` text
+```text
 http://localhost:5173
 ```
 
@@ -233,7 +233,7 @@ or `sessionStorage`.
 
 Axios is configured with:
 
-``` javascript
+```javascript
 const api = axios.create({
   baseURL: "/api",
   withCredentials: true,
@@ -245,18 +245,20 @@ const api = axios.create({
 
 ### Authentication endpoints
 
-  Method   Endpoint               Description
-  -------- ---------------------- -------------------------------
-  POST     `/api/auth/register`   Register a user
-  POST     `/api/auth/login`      Log in
-  POST     `/api/auth/logout`     Log out
-  GET      `/api/auth/me`         Return the authenticated user
+Method Endpoint Description
+
+---
+
+POST `/api/auth/register` Register a user
+POST `/api/auth/login` Log in
+POST `/api/auth/logout` Log out
+GET `/api/auth/me` Return the authenticated user
 
 ## Roles
 
 The template supports:
 
-``` text
+```text
 user
 moderator
 admin
@@ -267,12 +269,14 @@ authorization is always enforced by the backend as well.
 
 ### User endpoints
 
-  Method   Endpoint                Access
-  -------- ----------------------- ------------------
-  GET      `/api/users`            moderator, admin
-  GET      `/api/users/:id`        moderator, admin
-  PATCH    `/api/users/:id/role`   admin
-  DELETE   `/api/users/:id`        admin
+Method Endpoint Access
+
+---
+
+GET `/api/users` moderator, admin
+GET `/api/users/:id` moderator, admin
+PATCH `/api/users/:id/role` admin
+DELETE `/api/users/:id` admin
 
 Admins cannot change their own role or delete their own account through
 these management endpoints.
@@ -283,11 +287,11 @@ API input is validated with Zod before reaching controllers.
 
 Examples include:
 
--   username length
--   email format
--   password length
--   valid numeric user IDs
--   allowed roles
+- username length
+- email format
+- password length
+- valid numeric user IDs
+- allowed roles
 
 Invalid input returns HTTP `400` with validation details.
 
@@ -295,19 +299,19 @@ Invalid input returns HTTP `400` with validation details.
 
 The template includes:
 
--   password hashing with bcrypt
--   JWT authentication
--   HttpOnly authentication cookies
--   role-based backend authorization
--   Zod request validation
--   Helmet security headers
--   rate limiting for authentication endpoints
--   centralized error handling
--   parameterized PostgreSQL queries
+- password hashing with bcrypt
+- JWT authentication
+- HttpOnly authentication cookies
+- role-based backend authorization
+- Zod request validation
+- Helmet security headers
+- rate limiting for authentication endpoints
+- centralized error handling
+- parameterized PostgreSQL queries
 
 In production, Express is configured to trust the first reverse proxy:
 
-``` javascript
+```javascript
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
@@ -324,19 +328,19 @@ The client and server have separate test suites.
 
 Backend tests use:
 
--   Vitest
--   Supertest
--   a separate PostgreSQL test database
+- Vitest
+- Supertest
+- a separate PostgreSQL test database
 
 Create:
 
-``` text
+```text
 server/.env.test
 ```
 
 Example:
 
-``` env
+```env
 NODE_ENV=test
 
 DB_HOST=localhost
@@ -352,13 +356,13 @@ COOKIE_EXPIRES_IN_MS=3600000
 
 Create the test database in PostgreSQL, for example:
 
-``` sql
+```sql
 CREATE DATABASE auth_template_test_db;
 ```
 
 Run migrations against the test database in PowerShell:
 
-``` powershell
+```powershell
 $env:NODE_ENV="test"
 npm run migrate
 Remove-Item Env:NODE_ENV
@@ -366,58 +370,58 @@ Remove-Item Env:NODE_ENV
 
 Run backend tests:
 
-``` bash
+```bash
 cd server
 npm test
 ```
 
 Watch mode:
 
-``` bash
+```bash
 npm run test:watch
 ```
 
 Current backend suite contains 7 authentication tests covering:
 
--   registration
--   invalid registration
--   successful login
--   incorrect password
--   authenticated `/me`
--   unauthenticated `/me`
--   logout
+- registration
+- invalid registration
+- successful login
+- incorrect password
+- authenticated `/me`
+- unauthenticated `/me`
+- logout
 
 ### Frontend tests
 
 Frontend tests use:
 
--   Vitest
--   React Testing Library
--   `@testing-library/jest-dom`
--   `@testing-library/user-event`
--   jsdom
+- Vitest
+- React Testing Library
+- `@testing-library/jest-dom`
+- `@testing-library/user-event`
+- jsdom
 
 Run frontend tests:
 
-``` bash
+```bash
 cd client
 npm test
 ```
 
 Watch mode:
 
-``` bash
+```bash
 npm run test:watch
 ```
 
 Current frontend suite contains 6 tests covering:
 
--   unauthenticated protected-route redirect
--   authenticated protected-route access
--   normal-user admin-route rejection
--   admin-route access
--   successful login submission and navigation
--   failed login error display
+- unauthenticated protected-route redirect
+- authenticated protected-route access
+- normal-user admin-route rejection
+- admin-route access
+- successful login submission and navigation
+- failed login error display
 
 At the time this README was created, the template has 13 automated tests
 in total.
@@ -426,7 +430,7 @@ in total.
 
 ### Client
 
-``` bash
+```bash
 npm run dev
 npm run build
 npm run lint
@@ -436,7 +440,7 @@ npm run test:watch
 
 ### Server
 
-``` bash
+```bash
 npm run dev
 npm start
 npm run migrate
@@ -465,17 +469,13 @@ Never reuse a production JWT secret between unrelated projects.
 
 Before deploying an application based on this template:
 
--   set `NODE_ENV=production`
--   use a strong, unique `JWT_SECRET`
--   use production PostgreSQL credentials
--   configure the allowed CORS origin for the real frontend domain
--   verify cookie settings for the deployment architecture
--   verify the Express `trust proxy` setting
--   run client and server tests
--   run the frontend production build
--   keep `.env` files out of Git
--   use HTTPS
-
-## License
-
-Add the license appropriate for your project.
+- set `NODE_ENV=production`
+- use a strong, unique `JWT_SECRET`
+- use production PostgreSQL credentials
+- configure the allowed CORS origin for the real frontend domain
+- verify cookie settings for the deployment architecture
+- verify the Express `trust proxy` setting
+- run client and server tests
+- run the frontend production build
+- keep `.env` files out of Git
+- use HTTPS
