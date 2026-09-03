@@ -110,7 +110,7 @@ function Admin() {
   }
 
   return (
-    <main className="mx-auto max-w-4xl p-8 text-center bg-gray">
+    <main className="mx-auto max-w-4xl p-8 text-center bg-gray-100">
       <div className="mb-5 flex items-center justify-between">
         <h1 className="text-4xl font-bold">User management</h1>
 
