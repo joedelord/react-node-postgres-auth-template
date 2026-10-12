@@ -1,10 +1,8 @@
-const bcrypt = require("bcryptjs");
-
 const authModel = require("../models/authModel");
+const { createUserAccount, authenticate } = require("../services/userService");
 const { createToken } = require("../utils/token");
 
 const COOKIE_NAME = "auth_token";
-const SALT_ROUNDS = 12;
 
 const getCookieOptions = () => ({
   httpOnly: true,
@@ -17,29 +15,7 @@ const register = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
 
-    const existingEmail = await authModel.findUserByEmail(email);
-
-    if (existingEmail) {
-      return res.status(409).json({
-        error: "Email is already in use",
-      });
-    }
-
-    const existingUsername = await authModel.findUserByUsername(username);
-
-    if (existingUsername) {
-      return res.status(409).json({
-        error: "Username is already in use",
-      });
-    }
-
-    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-
-    const user = await authModel.createUser({
-      username,
-      email,
-      passwordHash,
-    });
+    const user = await createUserAccount({ username, email, password });
 
     const token = createToken(user);
 
@@ -57,17 +33,9 @@ const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const user = await authModel.findUserByEmail(email);
+    const user = await authenticate(email, password);
 
     if (!user) {
-      return res.status(401).json({
-        error: "Invalid email or password",
-      });
-    }
-
-    const passwordMatches = await bcrypt.compare(password, user.password_hash);
-
-    if (!passwordMatches) {
       return res.status(401).json({
         error: "Invalid email or password",
       });
@@ -78,14 +46,7 @@ const login = async (req, res, next) => {
     res.cookie(COOKIE_NAME, token, getCookieOptions());
 
     return res.json({
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        created_at: user.created_at,
-        updated_at: user.updated_at,
-      },
+      user,
     });
   } catch (error) {
     return next(error);

@@ -170,6 +170,8 @@ DB_NAME=your_database
 JWT_SECRET=your_long_random_secret
 JWT_EXPIRES_IN=1h
 COOKIE_EXPIRES_IN_MS=3600000
+
+CLIENT_ORIGIN=http://localhost:5173
 ```
 
 Generate a random JWT secret with Node.js:

@@ -1,6 +1,9 @@
+const authModel = require("../models/authModel");
 const { verifyToken } = require("../utils/token");
 
-const requireAuth = (req, res, next) => {
+// Loads the user on every request so role changes and deletions take effect
+// immediately instead of when the token expires.
+const requireAuth = async (req, res, next) => {
   const token = req.cookies.auth_token;
 
   if (!token) {
@@ -9,20 +12,30 @@ const requireAuth = (req, res, next) => {
     });
   }
 
+  let payload;
+
   try {
-    const payload = verifyToken(token);
-
-    req.user = {
-      id: payload.sub,
-      role: payload.role,
-    };
-
-    return next();
+    payload = verifyToken(token);
   } catch (error) {
     return res.status(401).json({
       error: "Invalid or expired authentication token",
     });
   }
+
+  const user = await authModel.findUserById(payload.sub);
+
+  if (!user) {
+    return res.status(401).json({
+      error: "Invalid or expired authentication token",
+    });
+  }
+
+  req.user = {
+    id: user.id,
+    role: user.role,
+  };
+
+  return next();
 };
 
 const requireRole = (...allowedRoles) => {

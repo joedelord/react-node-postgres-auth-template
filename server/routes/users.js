@@ -38,8 +38,6 @@ router.patch(
   updateUserRole,
 );
 
-router.post("/", requireRole("admin"), createUser);
-
 router.delete("/:id", requireRole("admin"), validate(userIdSchema), deleteUser);
 
 router.post("/", requireRole("admin"), validate(createUserSchema), createUser);

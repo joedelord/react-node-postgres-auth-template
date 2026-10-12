@@ -1,5 +1,5 @@
 const userModel = require("../models/userModel");
-const authModel = require("../models/authModel");
+const { createUserAccount } = require("../services/userService");
 
 const getUsers = async (req, res, next) => {
   try {
@@ -83,38 +83,11 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
-const bcrypt = require("bcryptjs");
-
-const SALT_ROUNDS = 12;
-
 const createUser = async (req, res, next) => {
   try {
-    const { username, email, password, role = "user" } = req.body;
+    const { username, email, password, role } = req.body;
 
-    const existingEmail = await authModel.findUserByEmail(email);
-
-    if (existingEmail) {
-      return res.status(409).json({
-        error: "Email is already in use",
-      });
-    }
-
-    const existingUsername = await authModel.findUserByUsername(username);
-
-    if (existingUsername) {
-      return res.status(409).json({
-        error: "Username is already in use",
-      });
-    }
-
-    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-
-    const user = await authModel.createUser({
-      username,
-      email,
-      passwordHash,
-      role,
-    });
+    const user = await createUserAccount({ username, email, password, role });
 
     return res.status(201).json({
       user,
