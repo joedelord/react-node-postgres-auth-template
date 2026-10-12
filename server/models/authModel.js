@@ -8,6 +8,7 @@ const findUserByEmail = async (email) => {
       email,
       password_hash,
       role,
+      token_version,
       created_at,
       updated_at
     FROM users
@@ -67,6 +68,7 @@ const createUser = async ({ username, email, passwordHash, role = "user" }) => {
       username,
       email,
       role,
+      token_version,
       created_at,
       updated_at`,
     [username, email, passwordHash, role],
@@ -75,9 +77,34 @@ const createUser = async ({ username, email, passwordHash, role = "user" }) => {
   return result.rows[0];
 };
 
+const findUserAuthState = async (id) => {
+  const result = await pool.query(
+    `SELECT
+      id,
+      role,
+      token_version
+    FROM users
+    WHERE id = $1`,
+    [id],
+  );
+
+  return result.rows[0];
+};
+
+const incrementTokenVersion = async (id) => {
+  await pool.query(
+    `UPDATE users
+     SET token_version = token_version + 1
+     WHERE id = $1`,
+    [id],
+  );
+};
+
 module.exports = {
   findUserByEmail,
   findUserByUsername,
   findUserById,
   createUser,
+  findUserAuthState,
+  incrementTokenVersion,
 };

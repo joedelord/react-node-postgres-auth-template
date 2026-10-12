@@ -128,4 +128,24 @@ describe("Authentication", () => {
 
     expect(meResponse.status).toBe(401);
   });
+
+  test("rejects a copied token after logout", async () => {
+    const registerResponse = await request(app)
+      .post("/api/auth/register")
+      .send({
+        username: "testuser",
+        email: "test@example.com",
+        password: "password123",
+      });
+
+    const cookie = registerResponse.headers["set-cookie"];
+
+    await request(app).post("/api/auth/logout").set("Cookie", cookie);
+
+    const response = await request(app)
+      .get("/api/auth/me")
+      .set("Cookie", cookie);
+
+    expect(response.status).toBe(401);
+  });
 });

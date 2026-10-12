@@ -10,6 +10,8 @@ const UNIQUE_VIOLATION = "23505";
 // the same time whether or not the account exists.
 const DUMMY_PASSWORD_HASH = bcrypt.hashSync("dummy-password", SALT_ROUNDS);
 
+const toPublicUser = ({ password_hash, token_version, ...user }) => user;
+
 const createUserAccount = async ({ username, email, password, role }) => {
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
@@ -43,12 +45,11 @@ const authenticate = async (email, password) => {
     return null;
   }
 
-  const { password_hash, ...safeUser } = user;
-
-  return safeUser;
+  return user;
 };
 
 module.exports = {
   createUserAccount,
   authenticate,
+  toPublicUser,
 };

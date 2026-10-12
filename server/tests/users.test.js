@@ -3,6 +3,7 @@ const request = require("supertest");
 const app = require("../app");
 const pool = require("../config/db");
 
+const userModel = require("../models/userModel");
 const { createUserAccount } = require("../services/userService");
 const { clearDatabase } = require("./helpers/database");
 
@@ -86,5 +87,52 @@ describe("User management", () => {
     const response = await admin.get("/api/auth/me");
 
     expect(response.status).toBe(401);
+  });
+
+  test("keeps one admin when two admins demote each other at once", async () => {
+    const first = await createUserAccount({
+      username: "firstadmin",
+      email: "first@example.com",
+      password: "password123",
+      role: "admin",
+    });
+
+    const second = await createUserAccount({
+      username: "secondadmin",
+      email: "second@example.com",
+      password: "password123",
+      role: "admin",
+    });
+
+    // Called on the model directly: over HTTP, requireAuth often rejects the
+    // second request before it reaches the guard.
+    const results = await Promise.allSettled([
+      userModel.updateUserRole(second.id, "user"),
+      userModel.updateUserRole(first.id, "user"),
+    ]);
+
+    const rejected = results.filter((result) => result.status === "rejected");
+
+    expect(rejected).toHaveLength(1);
+    expect(rejected[0].reason.message).toBe("Cannot remove the last admin");
+
+    const admins = await pool.query(
+      "SELECT COUNT(*)::int AS count FROM users WHERE role = 'admin'",
+    );
+
+    expect(admins.rows[0].count).toBe(1);
+  });
+
+  test("refuses to delete the last admin", async () => {
+    const admin = await createUserAccount({
+      username: "onlyadmin",
+      email: "only@example.com",
+      password: "password123",
+      role: "admin",
+    });
+
+    await expect(userModel.deleteUser(admin.id)).rejects.toThrow(
+      "Cannot remove the last admin",
+    );
   });
 });

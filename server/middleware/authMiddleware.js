@@ -1,8 +1,8 @@
 const authModel = require("../models/authModel");
 const { verifyToken } = require("../utils/token");
 
-// Loads the user on every request so role changes and deletions take effect
-// immediately instead of when the token expires.
+// Loads the user on every request so role changes, deletions and logouts take
+// effect immediately instead of when the token expires.
 const requireAuth = async (req, res, next) => {
   const token = req.cookies.auth_token;
 
@@ -22,9 +22,9 @@ const requireAuth = async (req, res, next) => {
     });
   }
 
-  const user = await authModel.findUserById(payload.sub);
+  const user = await authModel.findUserAuthState(payload.sub);
 
-  if (!user) {
+  if (!user || user.token_version !== payload.ver) {
     return res.status(401).json({
       error: "Invalid or expired authentication token",
     });

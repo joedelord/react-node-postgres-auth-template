@@ -1,5 +1,8 @@
 const userModel = require("../models/userModel");
-const { createUserAccount } = require("../services/userService");
+const {
+  createUserAccount,
+  toPublicUser,
+} = require("../services/userService");
 
 const getUsers = async (req, res, next) => {
   try {
@@ -90,7 +93,7 @@ const createUser = async (req, res, next) => {
     const user = await createUserAccount({ username, email, password, role });
 
     return res.status(201).json({
-      user,
+      user: toPublicUser(user),
     });
   } catch (error) {
     return next(error);

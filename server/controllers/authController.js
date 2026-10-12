@@ -1,6 +1,10 @@
 const authModel = require("../models/authModel");
-const { createUserAccount, authenticate } = require("../services/userService");
-const { createToken } = require("../utils/token");
+const {
+  createUserAccount,
+  authenticate,
+  toPublicUser,
+} = require("../services/userService");
+const { createToken, verifyToken } = require("../utils/token");
 
 const COOKIE_NAME = "auth_token";
 
@@ -22,7 +26,7 @@ const register = async (req, res, next) => {
     res.cookie(COOKIE_NAME, token, getCookieOptions());
 
     return res.status(201).json({
-      user,
+      user: toPublicUser(user),
     });
   } catch (error) {
     return next(error);
@@ -46,23 +50,45 @@ const login = async (req, res, next) => {
     res.cookie(COOKIE_NAME, token, getCookieOptions());
 
     return res.json({
-      user,
+      user: toPublicUser(user),
     });
   } catch (error) {
     return next(error);
   }
 };
 
-const logout = (req, res) => {
-  res.clearCookie(COOKIE_NAME, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-  });
+// Bumping the token version invalidates every token issued to the user, so a
+// copied cookie stops working after logout.
+const logout = async (req, res, next) => {
+  try {
+    const token = req.cookies[COOKIE_NAME];
 
-  return res.json({
-    message: "Logged out",
-  });
+    if (token) {
+      let payload = null;
+
+      try {
+        payload = verifyToken(token);
+      } catch (error) {
+        // An invalid or expired token has nothing left to revoke.
+      }
+
+      if (payload) {
+        await authModel.incrementTokenVersion(payload.sub);
+      }
+    }
+
+    res.clearCookie(COOKIE_NAME, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+
+    return res.json({
+      message: "Logged out",
+    });
+  } catch (error) {
+    return next(error);
+  }
 };
 
 const getCurrentUser = async (req, res, next) => {

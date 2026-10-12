@@ -195,6 +195,19 @@ npm run migrate
 The migration runner records executed migration files so the same
 migration is not executed twice.
 
+### Creating the first admin
+
+Registration always creates `user` accounts. Create the first admin from
+the server directory:
+
+```bash
+npm run create-admin
+```
+
+The script asks for a username, email, and password. The password is not
+shown while typing. When not running in a terminal, provide the password
+through the `ADMIN_PASSWORD` environment variable.
+
 ## Development
 
 Start the backend:
@@ -232,6 +245,11 @@ Authentication uses a JWT stored in an HttpOnly cookie.
 
 The frontend does not store the authentication token in `localStorage`
 or `sessionStorage`.
+
+The backend loads the user from the database on every authenticated
+request, so role changes and account deletions take effect immediately.
+Logging out invalidates all of the user's existing tokens, which logs
+the user out on every device.
 
 Axios is configured with:
 
@@ -277,11 +295,13 @@ Method Endpoint Access
 
 GET `/api/users` moderator, admin
 GET `/api/users/:id` moderator, admin
+POST `/api/users` admin
 PATCH `/api/users/:id/role` admin
 DELETE `/api/users/:id` admin
 
 Admins cannot change their own role or delete their own account through
-these management endpoints.
+these management endpoints. The last remaining admin cannot be demoted
+or deleted.
 
 ## Validation
 

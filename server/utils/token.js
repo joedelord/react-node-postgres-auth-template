@@ -4,6 +4,7 @@ const createToken = (user) => {
   return jwt.sign(
     {
       sub: user.id,
+      ver: user.token_version,
     },
     process.env.JWT_SECRET,
     {
@@ -13,7 +14,9 @@ const createToken = (user) => {
 };
 
 const verifyToken = (token) => {
-  return jwt.verify(token, process.env.JWT_SECRET);
+  return jwt.verify(token, process.env.JWT_SECRET, {
+    algorithms: ["HS256"],
+  });
 };
 
 module.exports = {
