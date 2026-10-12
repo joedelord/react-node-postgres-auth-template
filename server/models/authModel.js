@@ -100,6 +100,33 @@ const incrementTokenVersion = async (id) => {
   );
 };
 
+const findPasswordHashById = async (id) => {
+  const result = await pool.query(
+    "SELECT password_hash FROM users WHERE id = $1",
+    [id],
+  );
+
+  return result.rows[0]?.password_hash;
+};
+
+// Bumping the token version logs the user out on every device.
+const updatePassword = async (id, passwordHash) => {
+  const result = await pool.query(
+    `UPDATE users
+     SET
+       password_hash = $1,
+       token_version = token_version + 1,
+       updated_at = CURRENT_TIMESTAMP
+     WHERE id = $2
+     RETURNING
+       id,
+       token_version`,
+    [passwordHash, id],
+  );
+
+  return result.rows[0];
+};
+
 module.exports = {
   findUserByEmail,
   findUserByUsername,
@@ -107,4 +134,6 @@ module.exports = {
   createUser,
   findUserAuthState,
   incrementTokenVersion,
+  findPasswordHashById,
+  updatePassword,
 };

@@ -3,6 +3,9 @@ const {
   createUserAccount,
   authenticate,
   toPublicUser,
+  changeUserPassword,
+  requestPasswordReset,
+  resetPassword: resetUserPassword,
 } = require("../services/userService");
 const { createToken, verifyToken } = require("../utils/token");
 
@@ -109,9 +112,62 @@ const getCurrentUser = async (req, res, next) => {
   }
 };
 
+// Changing the password logs out every other device; this one gets a fresh
+// cookie so the user stays signed in here.
+const changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await changeUserPassword(
+      req.user.id,
+      currentPassword,
+      newPassword,
+    );
+
+    res.cookie(COOKIE_NAME, createToken(user), getCookieOptions());
+
+    return res.json({
+      message: "Password changed",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// Always gives the same answer so the endpoint cannot be used to find out
+// which emails have accounts.
+const forgotPassword = async (req, res, next) => {
+  try {
+    await requestPasswordReset(req.body.email);
+
+    return res.json({
+      message: "If an account exists for that email, a reset link has been sent",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+
+    await resetUserPassword(token, password);
+
+    return res.json({
+      message: "Password has been reset",
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
   logout,
   getCurrentUser,
+  changePassword,
+  forgotPassword,
+  resetPassword,
 };

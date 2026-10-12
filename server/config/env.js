@@ -7,6 +7,8 @@ dotenv.config({
   path: path.resolve(process.cwd(), envFile),
 });
 
+process.env.CLIENT_ORIGIN ??= "http://localhost:5173";
+
 const REQUIRED_VARIABLES = [
   "DB_HOST",
   "DB_PORT",

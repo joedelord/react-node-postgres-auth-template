@@ -1,9 +1,13 @@
+const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 
 const authModel = require("../models/authModel");
+const passwordResetModel = require("../models/passwordResetModel");
 const HttpError = require("../utils/httpError");
+const mailer = require("../utils/mailer");
 
 const SALT_ROUNDS = 12;
+const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 const UNIQUE_VIOLATION = "23505";
 
 // Compared against when no user matches the email, so a failed login takes
@@ -48,8 +52,72 @@ const authenticate = async (email, password) => {
   return user;
 };
 
+const changeUserPassword = async (userId, currentPassword, newPassword) => {
+  const passwordHash = await authModel.findPasswordHashById(userId);
+
+  if (!passwordHash) {
+    throw new HttpError(404, "User not found");
+  }
+
+  const passwordMatches = await bcrypt.compare(currentPassword, passwordHash);
+
+  if (!passwordMatches) {
+    throw new HttpError(400, "Current password is incorrect");
+  }
+
+  const newPasswordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+  return authModel.updatePassword(userId, newPasswordHash);
+};
+
+// Only the SHA-256 hash of a reset token is stored, so a database leak does
+// not expose usable reset links.
+const hashResetToken = (token) => {
+  return crypto.createHash("sha256").update(token).digest("hex");
+};
+
+const requestPasswordReset = async (email) => {
+  const user = await authModel.findUserByEmail(email);
+
+  if (!user) {
+    return;
+  }
+
+  const token = crypto.randomBytes(32).toString("hex");
+
+  await passwordResetModel.createResetToken(
+    user.id,
+    hashResetToken(token),
+    new Date(Date.now() + PASSWORD_RESET_TTL_MS),
+  );
+
+  const resetUrl = `${process.env.CLIENT_ORIGIN}/reset-password?token=${token}`;
+
+  // Not awaited, so slow or failing delivery neither delays the response nor
+  // reveals whether the account exists.
+  mailer.sendPasswordResetEmail(user.email, resetUrl).catch((error) => {
+    console.error("Failed to send password reset email:", error);
+  });
+};
+
+const resetPassword = async (token, newPassword) => {
+  const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+  const userId = await passwordResetModel.resetPasswordWithToken(
+    hashResetToken(token),
+    passwordHash,
+  );
+
+  if (!userId) {
+    throw new HttpError(400, "Invalid or expired reset token");
+  }
+};
+
 module.exports = {
   createUserAccount,
   authenticate,
   toPublicUser,
+  changeUserPassword,
+  requestPasswordReset,
+  resetPassword,
 };

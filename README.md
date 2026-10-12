@@ -273,6 +273,29 @@ POST `/api/auth/register` Register a user
 POST `/api/auth/login` Log in
 POST `/api/auth/logout` Log out
 GET `/api/auth/me` Return the authenticated user
+PATCH `/api/auth/password` Change the password (logged in)
+POST `/api/auth/forgot-password` Request a password reset link
+POST `/api/auth/reset-password` Set a new password with a reset token
+
+### Password reset
+
+`POST /api/auth/forgot-password` always returns the same response, so it
+cannot be used to find out which emails have accounts. Reset links point
+to `CLIENT_ORIGIN/reset-password?token=...` and expire after one hour.
+Only the latest link works, and each link can be used once.
+
+Email delivery is a placeholder in `server/utils/mailer.js`: outside
+production it prints the reset link to the server console. Connect a real
+email provider before deploying.
+
+Changing or resetting the password logs the user out on every other
+device.
+
+### Rate limits
+
+Login is limited per IP address and, for failed attempts, per email
+address. Registration, password reset requests, and password changes
+are limited as well. Rate limits are disabled when `NODE_ENV=test`.
 
 ## Roles
 
