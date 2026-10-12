@@ -2,15 +2,16 @@ import { useEffect, useState } from "react";
 
 import { useAuth } from "../context/useAuth";
 import api from "../services/api";
+import { getErrorMessage } from "../services/errors";
 import UserTable from "../components/admin/UserTable";
 import AddUserForm from "../components/admin/AddUserForm";
-import { useNavigate } from "react-router";
+import { Link } from "react-router";
 
 const PAGE_SIZE = 20;
 
 function Admin() {
   const { user: currentUser } = useAuth();
-  const navigate = useNavigate();
+  const isAdmin = currentUser.role === "admin";
 
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState(1);
@@ -35,9 +36,7 @@ function Admin() {
         }
       } catch (error) {
         if (!cancelled) {
-          setErrorMessage(
-            error.response?.data?.error || "Failed to load users",
-          );
+          setErrorMessage(getErrorMessage(error, "Failed to load users"));
         }
       } finally {
         if (!cancelled) {
@@ -80,9 +79,7 @@ function Admin() {
         ),
       );
     } catch (error) {
-      setErrorMessage(
-        error.response?.data?.error || "Failed to update user role",
-      );
+      setErrorMessage(getErrorMessage(error, "Failed to update user role"));
     }
   };
 
@@ -103,7 +100,7 @@ function Admin() {
       // Step back when the last user on this page was deleted.
       showPage(users.length === 1 && page > 1 ? page - 1 : page);
     } catch (error) {
-      setErrorMessage(error.response?.data?.error || "Failed to delete user");
+      setErrorMessage(getErrorMessage(error, "Failed to delete user"));
     }
   };
 
@@ -118,7 +115,7 @@ function Admin() {
 
       setIsAddUserOpen(false);
     } catch (error) {
-      setErrorMessage(error.response?.data?.error || "Failed to create user");
+      setErrorMessage(getErrorMessage(error, "Failed to create user"));
 
       throw error;
     }
@@ -131,12 +128,15 @@ function Admin() {
   return (
     <main className="mx-auto max-w-4xl p-8 text-center bg-gray-100">
       <div className="mb-5 flex items-center justify-between">
-        <h1 className="text-4xl font-bold">User management</h1>
+        <h1 className="text-4xl font-bold">
+          {isAdmin ? "User management" : "Users"}
+        </h1>
 
-        <button
-          type="button"
-          onClick={() => setIsAddUserOpen((current) => !current)}
-          className="
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() => setIsAddUserOpen((current) => !current)}
+            className="
     flex h-10 w-10
     items-center justify-center
     rounded-full
@@ -144,10 +144,11 @@ function Admin() {
     text-white
     hover:bg-blue-700
   "
-          aria-label={isAddUserOpen ? "Close" : "Add user"}
-        >
-          <span className="text-xl mb-1">{isAddUserOpen ? "×" : "+"}</span>
-        </button>
+            aria-label={isAddUserOpen ? "Close" : "Add user"}
+          >
+            <span className="text-xl mb-1">{isAddUserOpen ? "×" : "+"}</span>
+          </button>
+        )}
       </div>
 
       {errorMessage && (
@@ -156,7 +157,7 @@ function Admin() {
         </p>
       )}
 
-      {isAddUserOpen && (
+      {isAdmin && isAddUserOpen && (
         <AddUserForm
           onCreateUser={handleCreateUser}
           onCancel={() => setIsAddUserOpen(false)}
@@ -166,6 +167,7 @@ function Admin() {
       <UserTable
         users={users}
         currentUser={currentUser}
+        canManage={isAdmin}
         onRoleChange={handleRoleChange}
         onDeleteUser={handleDeleteUser}
       />
@@ -199,9 +201,9 @@ function Admin() {
         </nav>
       )}
 
-      <button className="my-4" onClick={() => navigate(-1)}>
-        ← Back
-      </button>
+      <Link to="/dashboard" className="my-4 inline-block">
+        ← Back to dashboard
+      </Link>
     </main>
   );
 }

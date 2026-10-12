@@ -40,7 +40,9 @@ and automated tests.
 - Protected React routes
 - Role-based authorization
 - `user`, `moderator`, and `admin` roles
-- Admin user management
+- Password change, and password reset by email link
+- Admin user management, with a read-only user list for moderators
+- Automatic logout in the browser when the server ends the session
 - User role changes
 - User deletion
 - PostgreSQL migrations
@@ -69,13 +71,19 @@ react-node-postgres-auth-template/
 │   │   │   └── useAuth.js
 │   │   ├── pages/
 │   │   │   ├── Admin.jsx
+│   │   │   ├── ChangePassword.jsx
 │   │   │   ├── Dashboard.jsx
+│   │   │   ├── ForgotPassword.jsx
 │   │   │   ├── Home.jsx
 │   │   │   ├── Login.jsx
 │   │   │   ├── Login.test.jsx
-│   │   │   └── NotFound.jsx
+│   │   │   ├── NotFound.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── ResetPassword.jsx
+│   │   │   └── ResetPassword.test.jsx
 │   │   ├── services/
-│   │   │   └── api.js
+│   │   │   ├── api.js
+│   │   │   └── errors.js
 │   │   ├── test/
 │   │   │   └── setup.js
 │   │   ├── App.jsx

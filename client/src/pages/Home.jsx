@@ -14,7 +14,11 @@ function Home() {
           Open dashboard
         </ButtonLink>
       ) : (
-        <ButtonLink to="/login">Login</ButtonLink>
+        <div className="flex justify-center gap-3">
+          <ButtonLink to="/login">Login</ButtonLink>
+
+          <ButtonLink to="/register">Create account</ButtonLink>
+        </div>
       )}
     </main>
   );

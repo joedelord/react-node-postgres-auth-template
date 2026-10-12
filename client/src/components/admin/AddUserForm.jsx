@@ -24,6 +24,9 @@ function AddUserForm({ onCreateUser, onCancel }) {
       setEmail("");
       setPassword("");
       setRole("user");
+    } catch {
+      // The admin page shows the error; keeping the fields lets the admin
+      // correct them.
     } finally {
       setIsSubmitting(false);
     }
@@ -41,6 +44,8 @@ function AddUserForm({ onCreateUser, onCancel }) {
         placeholder="Username"
         value={username}
         required
+        minLength={3}
+        maxLength={100}
         onChange={(event) => setUsername(event.target.value)}
         className="rounded border px-3 py-2"
       />
@@ -60,6 +65,7 @@ function AddUserForm({ onCreateUser, onCancel }) {
         value={password}
         required
         minLength={8}
+        maxLength={128}
         onChange={(event) => setPassword(event.target.value)}
         className="rounded border px-3 py-2"
       />

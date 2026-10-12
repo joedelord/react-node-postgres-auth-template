@@ -29,6 +29,16 @@ function Dashboard() {
           </p>
         )}
 
+        {user.role === "moderator" && (
+          <p className="py-0.5 underline text-blue-700">
+            <Link to="/admin">View users</Link>
+          </p>
+        )}
+
+        <p className="py-0.5 underline text-blue-700">
+          <Link to="/account/password">Change password</Link>
+        </p>
+
         <button
           className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors duration-200 mt-4"
           type="button"

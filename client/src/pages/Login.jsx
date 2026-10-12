@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router";
+import { Link, Navigate, useLocation, useNavigate } from "react-router";
 
 import { useAuth } from "../context/useAuth";
 import LoginForm from "../components/admin/LoginForm";
+import { getErrorMessage } from "../services/errors";
 
 function Login() {
   const [errorMessage, setErrorMessage] = useState("");
@@ -34,7 +35,7 @@ function Login() {
         replace: true,
       });
     } catch (error) {
-      setErrorMessage(error.response?.data?.error || "Login failed");
+      setErrorMessage(getErrorMessage(error, "Login failed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -49,6 +50,16 @@ function Login() {
         errorMessage={errorMessage}
         isSubmitting={isSubmitting}
       />
+
+      <div className="mx-auto mt-4 flex w-full max-w-md justify-between text-sm">
+        <Link to="/register" className="text-blue-700 underline">
+          Create account
+        </Link>
+
+        <Link to="/forgot-password" className="text-blue-700 underline">
+          Forgot password?
+        </Link>
+      </div>
     </main>
   );
 }

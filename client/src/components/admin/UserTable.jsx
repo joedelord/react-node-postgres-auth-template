@@ -1,13 +1,21 @@
-function UserTable({ users, currentUser, onRoleChange, onDeleteUser }) {
+// Moderators get a read-only view: the server leaves out emails for them
+// and rejects changes.
+function UserTable({
+  users,
+  currentUser,
+  canManage,
+  onRoleChange,
+  onDeleteUser,
+}) {
   return (
     <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
       <table className="w-full text-left">
         <thead className="bg-gray-100 text-sm text-gray-700">
           <tr>
             <th className="px-6 py-3 font-semibold">Username</th>
-            <th className="px-6 py-3 font-semibold">Email</th>
+            {canManage && <th className="px-6 py-3 font-semibold">Email</th>}
             <th className="px-6 py-3 font-semibold">Role</th>
-            <th className="px-6 py-3 font-semibold">Actions</th>
+            {canManage && <th className="px-6 py-3 font-semibold">Actions</th>}
           </tr>
         </thead>
 
@@ -24,34 +32,42 @@ function UserTable({ users, currentUser, onRoleChange, onDeleteUser }) {
                 )}
               </td>
 
-              <td className="px-6 py-4 text-gray-600">{user.email}</td>
+              {canManage && (
+                <td className="px-6 py-4 text-gray-600">{user.email}</td>
+              )}
 
               <td className="px-6 py-4">
-                <select
-                  value={user.role}
-                  disabled={user.id === currentUser.id}
-                  onChange={(event) =>
-                    onRoleChange(user.id, event.target.value)
-                  }
-                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
-                >
-                  <option value="user">User</option>
-                  <option value="moderator">Moderator</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </td>
-
-              <td className="px-6 py-4">
-                {user.id !== currentUser.id && (
-                  <button
-                    type="button"
-                    onClick={() => onDeleteUser(user)}
-                    className="rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
+                {canManage ? (
+                  <select
+                    value={user.role}
+                    disabled={user.id === currentUser.id}
+                    onChange={(event) =>
+                      onRoleChange(user.id, event.target.value)
+                    }
+                    className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500"
                   >
-                    Delete
-                  </button>
+                    <option value="user">User</option>
+                    <option value="moderator">Moderator</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                ) : (
+                  <span className="capitalize">{user.role}</span>
                 )}
               </td>
+
+              {canManage && (
+                <td className="px-6 py-4">
+                  {user.id !== currentUser.id && (
+                    <button
+                      type="button"
+                      onClick={() => onDeleteUser(user)}
+                      className="rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
