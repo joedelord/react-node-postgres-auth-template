@@ -9,14 +9,11 @@ dotenv.config({
 
 process.env.CLIENT_ORIGIN ??= "http://localhost:5173";
 
-const REQUIRED_VARIABLES = [
-  "DB_HOST",
-  "DB_PORT",
-  "DB_USER",
-  "DB_PASSWORD",
-  "DB_NAME",
-  "JWT_SECRET",
-];
+const DATABASE_VARIABLES = process.env.DATABASE_URL
+  ? []
+  : ["DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME"];
+
+const REQUIRED_VARIABLES = [...DATABASE_VARIABLES, "JWT_SECRET"];
 
 const missingVariables = REQUIRED_VARIABLES.filter(
   (name) => !process.env[name],

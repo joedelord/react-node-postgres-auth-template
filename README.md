@@ -174,6 +174,20 @@ COOKIE_EXPIRES_IN_MS=3600000
 CLIENT_ORIGIN=http://localhost:5173
 ```
 
+Hosted PostgreSQL providers usually give a single connection string. Set
+`DATABASE_URL` instead of the `DB_*` variables to use it:
+
+```env
+DATABASE_URL=postgres://user:password@host:5432/database
+```
+
+Set `DB_SSL=true` when the database requires SSL. Certificates are
+verified by default; set `DB_SSL_REJECT_UNAUTHORIZED=false` only for
+providers that use self-signed certificates.
+
+The server refuses to start if `JWT_SECRET` or the database settings are
+missing.
+
 Generate a random JWT secret with Node.js:
 
 ```bash
@@ -296,6 +310,22 @@ device.
 Login is limited per IP address and, for failed attempts, per email
 address. Registration, password reset requests, and password changes
 are limited as well. Rate limits are disabled when `NODE_ENV=test`.
+
+Rate limit counters are stored in PostgreSQL (the `rate_limits` table), so
+the limits hold across all server instances without extra
+infrastructure.
+
+## Health check
+
+GET `/api/health` returns `{"status":"ok"}` when the database is reachable
+and status `503` when it is not. Use it for load balancer and uptime
+checks.
+
+## Shutdown
+
+On `SIGTERM` or `SIGINT` the server stops accepting new connections,
+finishes requests already in progress, closes the database pool, and
+exits. If that takes longer than 10 seconds, it exits anyway.
 
 ## Roles
 

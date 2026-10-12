@@ -28,22 +28,21 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-app.get("/api", (req, res) => {
-  res.json({
-    message: "Backend working fine!",
-  });
-});
-
-app.get("/api/test-db", async (req, res, next) => {
+// For load balancers and uptime checks. Reports only whether the database is
+// reachable, never error details.
+app.get("/api/health", async (req, res) => {
   try {
-    const result = await pool.query("SELECT NOW()");
+    await pool.query("SELECT 1");
 
     return res.json({
-      connected: true,
-      databaseTime: result.rows[0].now,
+      status: "ok",
     });
   } catch (error) {
-    return next(error);
+    console.error("Health check failed:", error);
+
+    return res.status(503).json({
+      status: "unavailable",
+    });
   }
 });
 

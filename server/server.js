@@ -1,9 +1,36 @@
 require("./config/env");
 
 const app = require("./app");
+const pool = require("./config/db");
 
 const PORT = process.env.PORT || 5000;
+const SHUTDOWN_TIMEOUT_MS = 10000;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
+
+// Stops accepting connections, lets in-flight requests finish, then closes
+// the database pool. Hosting platforms send SIGTERM before stopping a
+// container; SIGINT is Ctrl+C.
+const shutdown = (signal) => {
+  console.log(`${signal} received, shutting down`);
+
+  // Force exit if open connections keep the server from closing.
+  setTimeout(() => {
+    console.error("Shutdown timed out, forcing exit");
+    process.exit(1);
+  }, SHUTDOWN_TIMEOUT_MS).unref();
+
+  server.close(async (error) => {
+    if (error) {
+      console.error("Error while closing server:", error);
+      process.exitCode = 1;
+    }
+
+    await pool.end();
+  });
+};
+
+process.once("SIGTERM", shutdown);
+process.once("SIGINT", shutdown);
