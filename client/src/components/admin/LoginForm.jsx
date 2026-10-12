@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import PasswordInput from "../PasswordInput";
+
 function LoginForm({ onSubmit, errorMessage, isSubmitting }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,10 +36,9 @@ function LoginForm({ onSubmit, errorMessage, isSubmitting }) {
       <div className="flex flex-col gap-1 mt-3">
         <label htmlFor="password">Password</label>
 
-        <input
+        <PasswordInput
           className="border rounded p-1"
           id="password"
-          type="password"
           value={password}
           autoComplete="current-password"
           required

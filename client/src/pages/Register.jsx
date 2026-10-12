@@ -11,6 +11,7 @@ function Register() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -30,6 +31,12 @@ function Register() {
     event.preventDefault();
 
     setErrorMessage("");
+
+    if (password !== confirmPassword) {
+      setErrorMessage("Passwords do not match");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -80,6 +87,17 @@ function Register() {
           maxLength={128}
           className="mt-3"
           onChange={(event) => setPassword(event.target.value)}
+        />
+
+        <FormField
+          id="confirmPassword"
+          label="Confirm password"
+          type="password"
+          value={confirmPassword}
+          autoComplete="new-password"
+          required
+          className="mt-3"
+          onChange={(event) => setConfirmPassword(event.target.value)}
         />
 
         {errorMessage && (

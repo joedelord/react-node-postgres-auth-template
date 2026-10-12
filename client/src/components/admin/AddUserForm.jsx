@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import PasswordInput from "../PasswordInput";
+
 function AddUserForm({ onCreateUser, onCancel }) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -59,9 +61,9 @@ function AddUserForm({ onCreateUser, onCancel }) {
         className="rounded border px-3 py-2"
       />
 
-      <input
-        type="password"
+      <PasswordInput
         placeholder="Password"
+        autoComplete="new-password"
         value={password}
         required
         minLength={8}
