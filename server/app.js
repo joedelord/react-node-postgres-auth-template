@@ -4,6 +4,7 @@ const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 
 const pool = require("./config/db");
+const requestLogger = require("./middleware/requestLogger");
 
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/users");
@@ -15,6 +16,8 @@ const app = express();
 if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
+
+app.use(requestLogger);
 
 app.use(helmet());
 
@@ -38,7 +41,7 @@ app.get("/api/health", async (req, res) => {
       status: "ok",
     });
   } catch (error) {
-    console.error("Health check failed:", error);
+    req.log.error({ err: error }, "Health check failed");
 
     return res.status(503).json({
       status: "unavailable",

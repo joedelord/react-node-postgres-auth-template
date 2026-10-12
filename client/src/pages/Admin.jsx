@@ -6,11 +6,16 @@ import UserTable from "../components/admin/UserTable";
 import AddUserForm from "../components/admin/AddUserForm";
 import { useNavigate } from "react-router";
 
+const PAGE_SIZE = 20;
+
 function Admin() {
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
 
   const [users, setUsers] = useState([]);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [reloadCount, setReloadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
@@ -20,10 +25,13 @@ function Admin() {
 
     async function loadUsers() {
       try {
-        const response = await api.get("/users");
+        const response = await api.get("/users", {
+          params: { page, pageSize: PAGE_SIZE },
+        });
 
         if (!cancelled) {
-          setUsers(response.data);
+          setUsers(response.data.users);
+          setTotal(response.data.total);
         }
       } catch (error) {
         if (!cancelled) {
@@ -43,7 +51,18 @@ function Admin() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [page, reloadCount]);
+
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // Shows the given page, reloading when it is already the current one.
+  const showPage = (targetPage) => {
+    if (targetPage === page) {
+      setReloadCount((count) => count + 1);
+    } else {
+      setPage(targetPage);
+    }
+  };
 
   const handleRoleChange = async (userId, newRole) => {
     setErrorMessage("");
@@ -81,9 +100,8 @@ function Admin() {
     try {
       await api.delete(`/users/${user.id}`);
 
-      setUsers((currentUsers) =>
-        currentUsers.filter((currentUser) => currentUser.id !== user.id),
-      );
+      // Step back when the last user on this page was deleted.
+      showPage(users.length === 1 && page > 1 ? page - 1 : page);
     } catch (error) {
       setErrorMessage(error.response?.data?.error || "Failed to delete user");
     }
@@ -93,9 +111,10 @@ function Admin() {
     setErrorMessage("");
 
     try {
-      const response = await api.post("/users", userData);
+      await api.post("/users", userData);
 
-      setUsers((currentUsers) => [...currentUsers, response.data.user]);
+      // Users are ordered by id, so the new user is on the last page.
+      showPage(Math.ceil((total + 1) / PAGE_SIZE));
 
       setIsAddUserOpen(false);
     } catch (error) {
@@ -150,6 +169,35 @@ function Admin() {
         onRoleChange={handleRoleChange}
         onDeleteUser={handleDeleteUser}
       />
+
+      {pageCount > 1 && (
+        <nav
+          aria-label="Pagination"
+          className="mt-4 flex items-center justify-center gap-4"
+        >
+          <button
+            type="button"
+            onClick={() => setPage((current) => current - 1)}
+            disabled={page === 1}
+            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:text-gray-400"
+          >
+            Previous
+          </button>
+
+          <span className="text-sm text-gray-600">
+            Page {page} of {pageCount}
+          </span>
+
+          <button
+            type="button"
+            onClick={() => setPage((current) => current + 1)}
+            disabled={page === pageCount}
+            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:text-gray-400"
+          >
+            Next
+          </button>
+        </nav>
+      )}
 
       <button className="my-4" onClick={() => navigate(-1)}>
         ← Back

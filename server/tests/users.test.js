@@ -135,4 +135,108 @@ describe("User management", () => {
       "Cannot remove the last admin",
     );
   });
+
+  test("paginates the user list", async () => {
+    const admin = await loginAs("admin");
+
+    // Plain inserts: these users never log in, so they need no real hash.
+    await pool.query(
+      `INSERT INTO users (username, email, password_hash)
+       SELECT 'user' || n, 'user' || n || '@example.com', 'unused'
+       FROM generate_series(1, 4) AS n`,
+    );
+
+    const response = await admin
+      .get("/api/users")
+      .query({ page: 2, pageSize: 2 });
+
+    expect(response.status).toBe(200);
+
+    expect(response.body).toMatchObject({
+      total: 5,
+      page: 2,
+      pageSize: 2,
+    });
+
+    expect(response.body.users.map((user) => user.username)).toEqual([
+      "user2",
+      "user3",
+    ]);
+  });
+
+  test("rejects an invalid page size", async () => {
+    const admin = await loginAs("admin");
+
+    const response = await admin.get("/api/users").query({ pageSize: 500 });
+
+    expect(response.status).toBe(400);
+  });
+
+  test("shows emails to admins but not to moderators", async () => {
+    const admin = await loginAs("admin");
+    const moderator = await loginAs("moderator");
+
+    const adminList = await admin.get("/api/users");
+    const moderatorList = await moderator.get("/api/users");
+
+    expect(adminList.body.users[0].email).toBe("admin@example.com");
+
+    expect(moderatorList.body.users).toHaveLength(2);
+
+    for (const user of moderatorList.body.users) {
+      expect(user).not.toHaveProperty("email");
+    }
+
+    const moderatorSingle = await moderator.get(
+      `/api/users/${adminList.body.users[0].id}`,
+    );
+
+    expect(moderatorSingle.status).toBe(200);
+    expect(moderatorSingle.body).not.toHaveProperty("email");
+  });
+
+  test("updates updated_at on role changes but not on logout", async () => {
+    const admin = await loginAs("admin");
+
+    const target = await createUserAccount({
+      username: "target",
+      email: "target@example.com",
+      password: "password123",
+    });
+
+    await pool.query(
+      "UPDATE users SET updated_at = '2000-01-01T00:00:00Z' WHERE id = $1",
+      [target.id],
+    );
+
+    const targetAgent = request.agent(app);
+
+    await targetAgent.post("/api/auth/login").send({
+      email: "target@example.com",
+      password: "password123",
+    });
+
+    await targetAgent.post("/api/auth/logout");
+
+    const afterLogout = await pool.query(
+      "SELECT updated_at FROM users WHERE id = $1",
+      [target.id],
+    );
+
+    expect(afterLogout.rows[0].updated_at.toISOString()).toBe(
+      "2000-01-01T00:00:00.000Z",
+    );
+
+    await admin.patch(`/api/users/${target.id}/role`).send({ role: "moderator" });
+
+    const afterRoleChange = await pool.query(
+      "SELECT updated_at FROM users WHERE id = $1",
+      [target.id],
+    );
+
+    expect(afterRoleChange.rows[0].updated_at.getFullYear()).toBeGreaterThan(
+      2000,
+    );
+  });
 });
+

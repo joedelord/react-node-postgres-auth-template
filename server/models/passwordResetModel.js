@@ -45,8 +45,7 @@ const resetPasswordWithToken = async (tokenHash, passwordHash) => {
       `UPDATE users
        SET
          password_hash = $1,
-         token_version = token_version + 1,
-         updated_at = CURRENT_TIMESTAMP
+         token_version = token_version + 1
        WHERE id = $2`,
       [passwordHash, resetToken.user_id],
     );

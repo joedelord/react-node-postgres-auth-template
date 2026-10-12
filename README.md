@@ -315,6 +315,16 @@ Rate limit counters are stored in PostgreSQL (the `rate_limits` table), so
 the limits hold across all server instances without extra
 infrastructure.
 
+## Logging
+
+The server logs with [pino](https://getpino.io): readable, colored output
+when `NODE_ENV=development`, one JSON object per line otherwise, and
+nothing during tests. Set `LOG_LEVEL` to change the level.
+
+Each request gets an ID, returned in the `X-Request-Id` response header
+and included in its log lines. An `X-Request-Id` sent by a proxy is
+reused. Cookies and authorization headers are never logged.
+
 ## Health check
 
 GET `/api/health` returns `{"status":"ok"}` when the database is reachable
@@ -351,6 +361,15 @@ GET `/api/users/:id` moderator, admin
 POST `/api/users` admin
 PATCH `/api/users/:id/role` admin
 DELETE `/api/users/:id` admin
+
+`GET /api/users` is paginated with `page` (default 1) and `pageSize`
+(default 20, maximum 100) query parameters, and returns:
+
+```json
+{ "users": [], "total": 0, "page": 1, "pageSize": 20 }
+```
+
+Only admins see email addresses; moderators get the other user fields.
 
 Admins cannot change their own role or delete their own account through
 these management endpoints. The last remaining admin cannot be demoted

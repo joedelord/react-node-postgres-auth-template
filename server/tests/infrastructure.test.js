@@ -36,6 +36,30 @@ describe("Health check", () => {
   });
 });
 
+describe("Request IDs", () => {
+  test("generates a request ID", async () => {
+    const response = await request(app).get("/api/health");
+
+    expect(response.headers["x-request-id"]).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
+  test("reuses a safe incoming request ID", async () => {
+    const response = await request(app)
+      .get("/api/health")
+      .set("X-Request-Id", "from-proxy-123");
+
+    expect(response.headers["x-request-id"]).toBe("from-proxy-123");
+  });
+
+  test("replaces an unsafe incoming request ID", async () => {
+    const response = await request(app)
+      .get("/api/health")
+      .set("X-Request-Id", "bad id with spaces");
+
+    expect(response.headers["x-request-id"]).not.toBe("bad id with spaces");
+  });
+});
+
 describe("PostgreSQL rate limit store", () => {
   test("shares counts between instances", async () => {
     // Two stores stand in for two server processes.

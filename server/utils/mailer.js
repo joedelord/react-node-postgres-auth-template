@@ -1,14 +1,17 @@
+const logger = require("./logger");
+
 // Placeholder delivery: replace with a real email provider (for example
 // Nodemailer, Resend or Amazon SES) before going to production.
 const sendPasswordResetEmail = async (email, resetUrl) => {
   if (process.env.NODE_ENV === "production") {
-    console.error(
-      `Password reset requested for ${email}, but no email provider is configured`,
+    logger.error(
+      { email },
+      "Password reset requested, but no email provider is configured",
     );
     return;
   }
 
-  console.log(`Password reset link for ${email}: ${resetUrl}`);
+  logger.info({ email, resetUrl }, "Password reset link (development only)");
 };
 
 module.exports = {

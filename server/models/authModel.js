@@ -37,23 +37,6 @@ const findUserByUsername = async (username) => {
   return result.rows[0];
 };
 
-const findUserById = async (id) => {
-  const result = await pool.query(
-    `SELECT
-      id,
-      username,
-      email,
-      role,
-      created_at,
-      updated_at
-    FROM users
-    WHERE id = $1`,
-    [id],
-  );
-
-  return result.rows[0];
-};
-
 const createUser = async ({ username, email, passwordHash, role = "user" }) => {
   const result = await pool.query(
     `INSERT INTO users (
@@ -115,8 +98,7 @@ const updatePassword = async (id, passwordHash) => {
     `UPDATE users
      SET
        password_hash = $1,
-       token_version = token_version + 1,
-       updated_at = CURRENT_TIMESTAMP
+       token_version = token_version + 1
      WHERE id = $2
      RETURNING
        id,
@@ -130,7 +112,6 @@ const updatePassword = async (id, passwordHash) => {
 module.exports = {
   findUserByEmail,
   findUserByUsername,
-  findUserById,
   createUser,
   findUserAuthState,
   incrementTokenVersion,

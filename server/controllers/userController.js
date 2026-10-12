@@ -4,11 +4,32 @@ const {
   toPublicUser,
 } = require("../services/userService");
 
+// Only admins see email addresses; moderators get the rest of the profile.
+const toVisibleUser = (user, viewer) => {
+  if (viewer.role === "admin") {
+    return user;
+  }
+
+  const { email, ...visibleUser } = user;
+
+  return visibleUser;
+};
+
 const getUsers = async (req, res, next) => {
   try {
-    const users = await userModel.getAllUsers();
+    const { page, pageSize } = req.validatedQuery;
 
-    return res.json(users);
+    const { users, total } = await userModel.getUsersPage({
+      limit: pageSize,
+      offset: (page - 1) * pageSize,
+    });
+
+    return res.json({
+      users: users.map((user) => toVisibleUser(user, req.user)),
+      total,
+      page,
+      pageSize,
+    });
   } catch (error) {
     return next(error);
   }
@@ -24,7 +45,7 @@ const getUserById = async (req, res, next) => {
       });
     }
 
-    return res.json(user);
+    return res.json(toVisibleUser(user, req.user));
   } catch (error) {
     return next(error);
   }

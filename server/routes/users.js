@@ -13,6 +13,7 @@ const { requireAuth, requireRole } = require("../middleware/authMiddleware");
 const validate = require("../middleware/validate");
 
 const {
+  listUsersSchema,
   userIdSchema,
   updateUserRoleSchema,
   createUserSchema,
@@ -22,7 +23,12 @@ const router = express.Router();
 
 router.use(requireAuth);
 
-router.get("/", requireRole("admin", "moderator"), getUsers);
+router.get(
+  "/",
+  requireRole("admin", "moderator"),
+  validate(listUsersSchema),
+  getUsers,
+);
 
 router.get(
   "/:id",

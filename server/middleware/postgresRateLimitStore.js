@@ -1,4 +1,5 @@
 const pool = require("../config/db");
+const logger = require("../utils/logger");
 
 // Roughly one increment in this many also deletes expired rows, which keeps
 // the table small without a background timer.
@@ -39,7 +40,7 @@ class PostgresRateLimitStore {
       pool
         .query("DELETE FROM rate_limits WHERE reset_at <= NOW()")
         .catch((error) => {
-          console.error("Failed to clean up rate limits:", error);
+          logger.error({ err: error }, "Failed to clean up rate limits");
         });
     }
 

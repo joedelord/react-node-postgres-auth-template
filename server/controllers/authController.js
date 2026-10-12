@@ -1,4 +1,5 @@
 const authModel = require("../models/authModel");
+const userModel = require("../models/userModel");
 const {
   createUserAccount,
   authenticate,
@@ -96,7 +97,7 @@ const logout = async (req, res, next) => {
 
 const getCurrentUser = async (req, res, next) => {
   try {
-    const user = await authModel.findUserById(req.user.id);
+    const user = await userModel.getUserById(req.user.id);
 
     if (!user) {
       return res.status(404).json({

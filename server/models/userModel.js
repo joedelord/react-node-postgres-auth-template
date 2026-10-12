@@ -32,20 +32,28 @@ const withLastAdminGuard = async (userId, removesAdmin, change) => {
   }
 };
 
-const getAllUsers = async () => {
-  const result = await pool.query(`
-    SELECT
-      id,
-      username,
-      email,
-      role,
-      created_at,
-      updated_at
-    FROM users
-    ORDER BY id
-  `);
+const getUsersPage = async ({ limit, offset }) => {
+  const [usersResult, countResult] = await Promise.all([
+    pool.query(
+      `SELECT
+        id,
+        username,
+        email,
+        role,
+        created_at,
+        updated_at
+      FROM users
+      ORDER BY id
+      LIMIT $1 OFFSET $2`,
+      [limit, offset],
+    ),
+    pool.query("SELECT COUNT(*)::int AS total FROM users"),
+  ]);
 
-  return result.rows;
+  return {
+    users: usersResult.rows,
+    total: countResult.rows[0].total,
+  };
 };
 
 const getUserById = async (id) => {
@@ -69,9 +77,7 @@ const updateUserRole = async (id, role) => {
   return withLastAdminGuard(id, role !== "admin", async (client) => {
     const result = await client.query(
       `UPDATE users
-       SET
-         role = $1,
-         updated_at = CURRENT_TIMESTAMP
+       SET role = $1
        WHERE id = $2
        RETURNING
          id,
@@ -105,7 +111,7 @@ const deleteUser = async (id) => {
 };
 
 module.exports = {
-  getAllUsers,
+  getUsersPage,
   getUserById,
   updateUserRole,
   deleteUser,

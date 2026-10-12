@@ -9,7 +9,7 @@ const errorHandler = (error, req, res, next) => {
     });
   }
 
-  console.error(error);
+  req.log.error({ err: error }, "Unhandled error");
 
   return res.status(500).json({
     error: "Internal server error",

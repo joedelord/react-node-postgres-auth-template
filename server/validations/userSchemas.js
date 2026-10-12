@@ -1,5 +1,22 @@
 const { z } = require("zod");
 
+const listUsersSchema = z.object({
+  query: z.object({
+    page: z.coerce
+      .number()
+      .int()
+      .min(1, "Page must be a positive integer")
+      .default(1),
+
+    pageSize: z.coerce
+      .number()
+      .int()
+      .min(1, "Page size must be between 1 and 100")
+      .max(100, "Page size must be between 1 and 100")
+      .default(20),
+  }),
+});
+
 const userIdSchema = z.object({
   params: z.object({
     id: z.coerce.number().int().positive("User ID must be a positive integer"),
@@ -38,6 +55,7 @@ const createUserSchema = z.object({
 });
 
 module.exports = {
+  listUsersSchema,
   userIdSchema,
   updateUserRoleSchema,
   createUserSchema,

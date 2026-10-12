@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const authModel = require("../models/authModel");
 const passwordResetModel = require("../models/passwordResetModel");
 const HttpError = require("../utils/httpError");
+const logger = require("../utils/logger");
 const mailer = require("../utils/mailer");
 
 const SALT_ROUNDS = 12;
@@ -96,7 +97,7 @@ const requestPasswordReset = async (email) => {
   // Not awaited, so slow or failing delivery neither delays the response nor
   // reveals whether the account exists.
   mailer.sendPasswordResetEmail(user.email, resetUrl).catch((error) => {
-    console.error("Failed to send password reset email:", error);
+    logger.error({ err: error }, "Failed to send password reset email");
   });
 };
 
